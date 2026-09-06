@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Undercards Card Database</title>
+<meta name="description" content="A searchable, filterable database of every card in Undercards.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="title-block">
+      <h1>Undercards <span>Card Database</span></h1>
+      <p class="subtitle">Every card, stat, and effect — searchable in one place.</p>
+    </div>
+    <div class="search-block">
+      <label for="search" class="sr-only">Search by name or effect text</label>
+      <input id="search" type="search" placeholder="Search by name or effect text…" autocomplete="off">
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <button id="filterToggle" class="filter-toggle" type="button" aria-expanded="false" aria-controls="filters">
+    <span>Filters</span>
+    <span id="activeFilterCount" class="filter-count" hidden>0</span>
+  </button>
+
+  <aside id="filters" class="filters">
+    <div class="filters-head">
+      <h2>Filters</h2>
+      <button id="resetFilters" type="button" class="reset-btn">Reset all</button>
+    </div>
+
+    <details class="filter-group" open>
+      <summary>Game <span class="count-badge" id="count-set"></span></summary>
+      <div id="group-set" class="chip-group"></div>
+    </details>
+
+    <details class="filter-group" open>
+      <summary>Rarity <span class="count-badge" id="count-rarity"></span></summary>
+      <div id="group-rarity" class="chip-group"></div>
+    </details>
+
+    <details class="filter-group" open>
+      <summary>Card type <span class="count-badge" id="count-type"></span></summary>
+      <div id="group-type" class="chip-group"></div>
+    </details>
+
+    <details class="filter-group" open>
+      <summary>Ownership <span class="count-badge" id="count-owned"></span></summary>
+      <div id="group-owned" class="chip-group"></div>
+    </details>
+
+    <details class="filter-group" open>
+      <summary>Cost</summary>
+      <div class="range-inputs">
+        <label>Min <input type="number" id="costMin" inputmode="numeric" min="0"></label>
+        <label>Max <input type="number" id="costMax" inputmode="numeric" min="0"></label>
+      </div>
+    </details>
+
+    <details class="filter-group" open>
+      <summary>ATK <span class="hint">(monsters)</span></summary>
+      <div class="range-inputs">
+        <label>Min <input type="number" id="atkMin" inputmode="numeric" min="0"></label>
+        <label>Max <input type="number" id="atkMax" inputmode="numeric" min="0"></label>
+      </div>
+    </details>
+
+    <details class="filter-group" open>
+      <summary>HP <span class="hint">(monsters)</span></summary>
+      <div class="range-inputs">
+        <label>Min <input type="number" id="hpMin" inputmode="numeric" min="0"></label>
+        <label>Max <input type="number" id="hpMax" inputmode="numeric" min="0"></label>
+      </div>
+    </details>
+
+    <details class="filter-group">
+      <summary>Soul <span class="count-badge" id="count-soul"></span></summary>
+      <div id="group-soul" class="chip-group"></div>
+    </details>
+
+    <details class="filter-group">
+      <summary>Tribe <span class="count-badge" id="count-tribe"></span></summary>
+      <input type="search" class="mini-search" id="tribeSearch" placeholder="Filter tribe list…">
+      <div id="group-tribe" class="chip-group scrollable"></div>
+    </details>
+
+    <details class="filter-group">
+      <summary>Keyword <span class="count-badge" id="count-keyword"></span></summary>
+      <input type="search" class="mini-search" id="keywordSearch" placeholder="Filter keyword list…">
+      <div id="group-keyword" class="chip-group scrollable"></div>
+    </details>
+  </aside>
+
+  <main class="results">
+    <div class="results-bar">
+      <p id="resultSummary" aria-live="polite"></p>
+      <label class="sort-label">Sort
+        <select id="sortSelect">
+          <option value="id-asc">Card order</option>
+          <option value="name-asc">Name (A–Z)</option>
+          <option value="name-desc">Name (Z–A)</option>
+          <option value="cost-asc">Cost (low–high)</option>
+          <option value="cost-desc">Cost (high–low)</option>
+          <option value="atk-desc">ATK (high–low)</option>
+          <option value="hp-desc">HP (high–low)</option>
+        </select>
+      </label>
+    </div>
+
+    <div id="cardGrid" class="card-grid"></div>
+    <p id="emptyState" class="empty-state" hidden>Nothing matches these filters. Try loosening one.</p>
+    <button id="loadMore" class="load-more" type="button" hidden>Show more cards</button>
+  </main>
+</div>
+
+<footer class="site-footer">
+  <p>Card data pulled from Undercards' own client (CraftConfig + translation files) at a point in time — a fan reference for personal cataloging, not affiliated with the Undercards team. Story-exclusive one-off cards aren't included. Effect keywords link to their in-game glossary text.</p>
+</footer>
+
+<div id="tooltip" class="kw-tooltip" role="tooltip" hidden></div>
+
+<script src="app.js"></script>
+</body>
+</html>
