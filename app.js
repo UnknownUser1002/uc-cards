@@ -10,6 +10,16 @@
   // needed. Cards with no matching file just show a placeholder initial.
   var IMAGE_BASE = 'images/';
   var IMAGE_EXTS = ['png', 'jpg', 'jpeg', 'webp'];
+
+  // Optional decorative card-frame image (a shared border/layout graphic, not
+  // per-card art). Same "bring your own file" pattern as card art: place a
+  // file at the path below yourself and the Cards view will use it. Regions
+  // (name/cost/art/desc/atk/rarity/hp) are positioned in CSS (.frame-*
+  // classes) to match that specific frame's proportions — if you swap in a
+  // differently-proportioned frame later, those percentages are the thing to
+  // adjust.
+  var FRAME_IMAGES = { Monster: 'images/frame-monster.png' };
+  var frameAvailable = {};
   // ---------------------------------------------------------------------
 
   var CARDS = [];
@@ -38,14 +48,14 @@
     sets: new Set(),
     rarities: new Set(),
     types: new Set(),
-    owned: new Set(),
     souls: new Set(),
     tribes: new Set(),
     keywords: new Set(),
     costMin: null, costMax: null,
     atkMin: null, atkMax: null,
     hpMin: null, hpMax: null,
-    sort: 'id-asc'
+    sort: 'id-asc',
+    view: 'list'
   };
 
   var visibleCount = PAGE_SIZE;
@@ -68,8 +78,6 @@
     if (Array.isArray(cardValue)) return cardValue.some(function (v) { return setState.has(v); });
     return setState.has(cardValue);
   }
-
-  function ownedKey(c) { return c.owned > 0 ? 'owned' : 'missing'; }
 
   // ---------------- data load ----------------
   function loadData() {
@@ -136,7 +144,7 @@
 
   function totalActiveFilters() {
     var n = 0;
-    ['sets', 'rarities', 'types', 'owned', 'souls', 'tribes', 'keywords'].forEach(function (k) {
+    ['sets', 'rarities', 'types', 'souls', 'tribes', 'keywords'].forEach(function (k) {
       n += state[k].size;
     });
     ['costMin', 'costMax', 'atkMin', 'atkMax', 'hpMin', 'hpMax'].forEach(function (k) {
@@ -168,9 +176,6 @@
 
     buildGenericGroup('#group-type', '#count-type',
       [{ value: 'Monster', label: 'Monster' }, { value: 'Spell', label: 'Spell' }], state.types);
-
-    buildGenericGroup('#group-owned', '#count-owned',
-      [{ value: 'owned', label: 'Owned' }, { value: 'missing', label: 'Not owned' }], state.owned);
 
     var souls = Object.keys(SOUL_LABELS).sort(function (a, b) { return SOUL_LABELS[a].localeCompare(SOUL_LABELS[b]); });
     buildGenericGroup('#group-soul', '#count-soul',
@@ -227,13 +232,13 @@
   function resetFilters() {
     state.search = '';
     $('#search').value = '';
-    ['sets', 'rarities', 'types', 'owned', 'souls', 'tribes', 'keywords'].forEach(function (k) { state[k].clear(); });
+    ['sets', 'rarities', 'types', 'souls', 'tribes', 'keywords'].forEach(function (k) { state[k].clear(); });
     ['costMin', 'costMax', 'atkMin', 'atkMax', 'hpMin', 'hpMax'].forEach(function (k) {
       state[k] = null;
     });
     ['#costMin', '#costMax', '#atkMin', '#atkMax', '#hpMin', '#hpMax'].forEach(function (id) { $(id).value = ''; });
     Array.from(document.querySelectorAll('.chip')).forEach(function (c) { c.setAttribute('aria-pressed', 'false'); });
-    ['#count-set', '#count-rarity', '#count-type', '#count-owned', '#count-soul', '#count-tribe', '#count-keyword']
+    ['#count-set', '#count-rarity', '#count-type', '#count-soul', '#count-tribe', '#count-keyword']
       .forEach(function (id) { $(id).textContent = ''; });
     $('#tribeSearch').value = '';
     $('#keywordSearch').value = '';
@@ -250,7 +255,6 @@
       if (!cardMatchesGeneric(state.sets, c.set)) return false;
       if (!cardMatchesGeneric(state.rarities, c.rarity)) return false;
       if (!cardMatchesGeneric(state.types, c.type)) return false;
-      if (!cardMatchesGeneric(state.owned, ownedKey(c))) return false;
       if (!cardMatchesGeneric(state.souls, c.soul)) return false;
       if (!cardMatchesGeneric(state.tribes, c.tribes)) return false;
       if (!cardMatchesGeneric(state.keywords, c.keywords)) return false;
@@ -322,6 +326,57 @@
     }, true);
   }
 
+  function preloadFrameImages() {
+    var promises = Object.keys(FRAME_IMAGES).map(function (key) {
+      return new Promise(function (resolve) {
+        var settled = false;
+        function done(ok) {
+          if (settled) return;
+          settled = true;
+          frameAvailable[key] = ok;
+          resolve();
+        }
+        var img = new Image();
+        img.onload = function () { done(true); };
+        img.onerror = function () { done(false); };
+        img.src = FRAME_IMAGES[key];
+        // Safety net: never let a slow/non-firing image load hold up the
+        // first render. If it resolves later, the next view switch or
+        // re-render will pick up the (by-then-known) frameAvailable value.
+        setTimeout(function () { done(false); }, 1500);
+      });
+    });
+    return Promise.all(promises);
+  }
+
+  function frameCardHTML(c) {
+    var frameKey = FRAME_IMAGES[c.type] ? c.type : null;
+    var available = frameKey && frameAvailable[frameKey];
+    var rarityVar = RARITY_COLOR_VAR[c.rarity] || '--border';
+    var rarityLabel = RARITY_LABELS[c.rarity] || c.rarity;
+
+    var styleParts = ['--tile-rarity:var(' + rarityVar + ')'];
+    if (available) styleParts.push('--frame-img:url(' + FRAME_IMAGES[frameKey] + ')');
+
+    var artInner = c.image
+      ? '<img data-slug="' + escapeHtml(c.image) + '" data-ext-index="0" alt="" loading="lazy" src="' + escapeHtml(IMAGE_BASE + c.image + '.' + IMAGE_EXTS[0]) + '" class="tile-art">'
+      : '<span class="frame-art-fallback">' + escapeHtml((c.name || '?').charAt(0).toUpperCase()) + '</span>';
+
+    var atkHtml = c.type === 'Monster' ? escapeHtml(String(c.atk)) : '';
+    var hpHtml = c.type === 'Monster' ? escapeHtml(String(c.hp)) : '';
+
+    return '' +
+      '<article class="frame-card' + (available ? '' : ' no-frame') + '" style="' + styleParts.join(';') + '" title="' + escapeHtml(c.name) + '">' +
+      '<div class="frame-region frame-name">' + escapeHtml(c.name) + '</div>' +
+      '<div class="frame-region frame-cost">' + c.cost + '</div>' +
+      '<div class="frame-region frame-art">' + artInner + '</div>' +
+      '<div class="frame-region frame-desc">' + (c.description ? renderDescription(c) : '<em>No effect text.</em>') + '</div>' +
+      '<div class="frame-region frame-atk">' + atkHtml + '</div>' +
+      '<div class="frame-region frame-rarity" style="--pill-color:var(' + rarityVar + ')">' + escapeHtml(rarityLabel) + '</div>' +
+      '<div class="frame-region frame-hp">' + hpHtml + '</div>' +
+      '</article>';
+  }
+
   function cardTileHTML(c) {
     var rarityVar = RARITY_COLOR_VAR[c.rarity] || '--border';
     var stats = '<span class="stat-badge cost"><span class="stat-key">C</span>' + c.cost + '</span>';
@@ -338,10 +393,6 @@
       var soulVar = SOUL_COLOR_VAR[c.soul] || '--border';
       meta += '<span class="meta-pill soul" style="--pill-color:var(' + soulVar + ')">' + escapeHtml(SOUL_LABELS[c.soul] || c.soul) + ' SOUL</span>';
     }
-    var ownedHtml = c.owned > 0
-      ? '<span class="tile-owned owned">Owned &times;' + c.owned + '</span>'
-      : '<span class="tile-owned missing">Not owned</span>';
-
     var tribesHtml = '';
     if (c.tribes.length) {
       tribesHtml = '<div class="tile-tribes">' + c.tribes.map(function (t) {
@@ -362,7 +413,7 @@
       '<div class="tile-name">' + escapeHtml(c.name) + '</div>' +
       '<div class="tile-stats">' + stats + '</div>' +
       '</div>' +
-      '<div class="tile-meta">' + meta + ownedHtml + '</div>' +
+      '<div class="tile-meta">' + meta + '</div>' +
       tribesHtml +
       descHtml +
       '</div>' +
@@ -392,7 +443,8 @@
     empty.hidden = true;
 
     var slice = results.slice(0, visibleCount);
-    grid.innerHTML = slice.map(cardTileHTML).join('');
+    grid.className = 'card-grid' + (state.view === 'cards' ? ' view-cards' : '');
+    grid.innerHTML = slice.map(state.view === 'cards' ? frameCardHTML : cardTileHTML).join('');
     loadMore.hidden = visibleCount >= results.length;
   }
 
@@ -477,6 +529,19 @@
     });
   }
 
+  function setupViewToggle() {
+    var listBtn = $('#viewList');
+    var cardsBtn = $('#viewCards');
+    function setView(v) {
+      state.view = v;
+      listBtn.setAttribute('aria-pressed', (v === 'list').toString());
+      cardsBtn.setAttribute('aria-pressed', (v === 'cards').toString());
+      render();
+    }
+    listBtn.addEventListener('click', function () { setView('list'); });
+    cardsBtn.addEventListener('click', function () { setView('cards'); });
+  }
+
   function init() {
     loadData().then(function () {
       buildFilterUI();
@@ -486,11 +551,14 @@
       setupSort();
       setupLoadMore();
       setupMobileFilterToggle();
+      setupViewToggle();
       setupTooltip();
       setupImageFallback();
       filterChipsBySearch('#group-tribe', '#tribeSearch');
       filterChipsBySearch('#group-keyword', '#keywordSearch');
       $('#resetFilters').addEventListener('click', resetFilters);
+      return preloadFrameImages();
+    }).then(function () {
       render();
     }).catch(function (err) {
       $('#resultSummary').textContent = '';
