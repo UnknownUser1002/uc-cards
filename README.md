@@ -58,3 +58,4 @@ data/cards.json         — the card data (see above)
 images/                 — drop your own card art here (see above)
 scripts/build_cards_data.py — regenerates data/cards.json from a fresh HAR
 ```
+THIS IS A FAN-MADE THING PLS DONT SUE ME CONTACT ME AT laikbeaz@gmail.com IF YOU WANT ME TO TAKE IT DOWN
