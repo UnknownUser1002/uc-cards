@@ -242,11 +242,9 @@ def build(har_path, out_path):
     collection, translation = load_har_sources(har_path)
 
     by_id = {}
-    owned_qty = {}
     for c in collection:
         if c['fixedId'] not in by_id:
             by_id[c['fixedId']] = c
-        owned_qty[c['fixedId']] = owned_qty.get(c['fixedId'], 0) + c.get('quantity', 0)
 
     resolver = Resolver(by_id, translation)
 
@@ -289,7 +287,6 @@ def build(har_path, out_path):
             'soul': soul if soul else None,
             'keywords': kw_list,
             'description': desc,
-            'owned': owned_qty.get(fid, 0),
         })
 
     glossary = {}
