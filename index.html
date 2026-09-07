@@ -54,11 +54,6 @@
     </details>
 
     <details class="filter-group" open>
-      <summary>Ownership <span class="count-badge" id="count-owned"></span></summary>
-      <div id="group-owned" class="chip-group"></div>
-    </details>
-
-    <details class="filter-group" open>
       <summary>Cost</summary>
       <div class="range-inputs">
         <label>Min <input type="number" id="costMin" inputmode="numeric" min="0"></label>
@@ -103,6 +98,10 @@
   <main class="results">
     <div class="results-bar">
       <p id="resultSummary" aria-live="polite"></p>
+      <div class="view-toggle" role="group" aria-label="Display style">
+        <button type="button" id="viewList" aria-pressed="true">List</button>
+        <button type="button" id="viewCards" aria-pressed="false">Cards</button>
+      </div>
       <label class="sort-label">Sort
         <select id="sortSelect">
           <option value="id-asc">Card order</option>
