@@ -18,7 +18,10 @@
   // classes) to match that specific frame's proportions — if you swap in a
   // differently-proportioned frame later, those percentages are the thing to
   // adjust.
-  var FRAME_IMAGES = { Monster: 'images/frame-monster.png' };
+  // FRAME_IMAGES currently points Monster and Spell at the same file since
+  // there's only one frame image right now. If a dedicated spell frame
+  // shows up later, just point 'Spell' at its own path.
+  var FRAME_IMAGES = { Monster: 'images/frame-monster.png', Spell: 'images/frame-monster.png' };
   var frameAvailable = {};
   // ---------------------------------------------------------------------
 
