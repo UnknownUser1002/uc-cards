@@ -24,8 +24,8 @@
   --rarity-common: #c9c6d1;
   --rarity-rare: #4fa3f7;
   --rarity-epic: #b374e6;
-  --rarity-legendary: #f2b544;
-  --rarity-token: #6b7280;
+  --rarity-legendary: #f4c430;
+  --rarity-token: #4cc26c;
   --rarity-determination: #e8384f;
 
   /* souls */
@@ -561,7 +561,7 @@ a { color: var(--accent-text); }
 .frame-art   { left: 4%; top: 15.4%; width: 91.5%; height: 36.4%; justify-content: center; background: var(--bg-inset); }
 .frame-art img { width: 100%; height: 100%; object-fit: cover; }
 .frame-art .frame-art-fallback { font-family: var(--font-display); font-size: 20px; color: var(--text-faint); }
-.frame-desc  { left: 4%; top: 53.7%; width: 91.5%; height: 32.3%; align-items: flex-start; font-size: 9.5px; overflow-y: auto; padding: 2% 3%; color: var(--text-dim); }
+.frame-desc  { left: 4%; top: 53.7%; width: 91.5%; height: 32.3%; display: block; font-size: 9.5px; line-height: 1.35; overflow-y: auto; padding: 2% 3%; color: var(--text-dim); text-align: left; }
 .frame-atk   { left: 4%; top: 87.8%; width: 24.1%; height: 8.9%; justify-content: center; font-family: var(--font-mono); font-size: 11px; color: #ff9e6b; }
 .frame-rarity{ left: 28.1%; top: 87.8%; width: 43.2%; height: 8.9%; justify-content: center; font-size: 9px; color: var(--pill-color, var(--text-dim)); }
 .frame-hp    { left: 71.3%; top: 87.8%; width: 24.1%; height: 8.9%; justify-content: center; font-family: var(--font-mono); font-size: 11px; color: #7fe08a; }
