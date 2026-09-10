@@ -162,13 +162,13 @@ class Resolver:
                 used_keywords.add('KR')
                 return 'KR'
             if head_u == 'ATK':
-                return 'ATK'
+                return (arg(0) + ' ATK') if args else 'ATK'
             if head_u == 'HP':
                 return 'HP'
             if head_u == 'DMG':
-                return 'damage'
+                return (arg(0) + ' damage') if args else 'damage'
             if head_u == 'GOLD':
-                return 'Gold'
+                return (arg(0) + ' Gold') if args else 'Gold'
             if head_u == 'COST':
                 return 'Cost'
             if head_u == 'RARITY':
@@ -181,7 +181,7 @@ class Resolver:
                 return override if override is not None else self.card_name(fid, count)
             if head_u == 'QUEST':
                 fid = arg(0)
-                return override if override is not None else self.card_name(fid, 1)
+                return override if override is not None else self.artifact_name(fid)
             if head_u == 'TRIBE':
                 name = arg(0)
                 count = int(arg(1, '1')) if arg(1, '1').lstrip('-').isdigit() else 1
